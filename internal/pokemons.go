@@ -22,6 +22,16 @@ type TypeEntry struct {
 	Type PokemonType `json:"type"`
 }
 
+type Stats struct {
+	BaseStat int  `json:"base_stat"`
+	Effort   int  `json:"effort"`
+	Stat     Stat `json:"stat"`
+}
+
+type Stat struct {
+	Name string `json:"name"`
+}
+
 type PokemonDetails struct {
 	Name           string      `json:"name"`
 	ID             int         `json:"id"`
@@ -29,4 +39,5 @@ type PokemonDetails struct {
 	Height         int         `json:"height"`
 	Weight         int         `json:"weight"`
 	Types          []TypeEntry `json:"types"`
+	Stats          []Stats     `json:"stats"`
 }

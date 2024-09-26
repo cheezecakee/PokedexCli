@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"math/rand"
-	_ "math/rand"
 	"os"
 	"strings"
 	"time"
@@ -52,6 +51,16 @@ func createCliCommand() map[string]cliCommand {
 			name:        "catch <pokemon>",
 			description: "Trys to catch a pokemon",
 			callback:    config.commandCatch,
+		},
+		"inspect": {
+			name:        "inspect <pokemon>",
+			description: "Displays pokemon stats",
+			callback:    commandInspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Displays all caught pokemons",
+			callback:    commandPokedex,
 		},
 	}
 }
@@ -179,6 +188,69 @@ func (c *config) commandCatch(args []string) error {
 	PokeDex[pokemon.Name] = pokemon
 
 	// fmt.Printf("Pokedex: %v\n", PokeDex)
+	return nil
+}
+
+// Constants for the layout
+const (
+	asciiHeight  = 10 // Height of the ASCII art (blank space for now)
+	asciiWidth   = 30 // Width of the ASCII art (blank space for now)
+	consoleWidth = 80 // Total width of the output
+)
+
+// Function to print blank ASCII space (or placeholder)
+func printAsciiPlaceholder() {
+	for i := 0; i < asciiHeight; i++ {
+		fmt.Printf("%s", strings.Repeat(" ", asciiWidth))
+		fmt.Println() // move to the next line
+	}
+}
+
+func commandInspect(args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("Insert area name [explore <area_name>]")
+	}
+	name := args[0]
+
+	if name, exists := PokeDex[name]; !exists {
+		fmt.Printf("Haven't caught %v yet! No data available.\n", name)
+		return nil
+	}
+
+	// Print the ASCII placeholder on the left
+	printAsciiPlaceholder()
+
+	// Print the box with the same formatting as before, pushed to the right
+	fmt.Println(strings.Repeat("-", consoleWidth))
+	fmt.Printf("%50sPokedex%v\n", "", PokeDex[name].Name)
+	fmt.Println(strings.Repeat("-", consoleWidth))
+
+	// Pokémon details
+	fmt.Printf("%30sName: %-10v\n", "", PokeDex[name].Name)
+	fmt.Printf("%30sHeight: %-10v\n", "", PokeDex[name].Height)
+	fmt.Printf("%30sWeight: %-10v\n", "", PokeDex[name].Weight)
+
+	// Stats
+	fmt.Printf("%30sStats:\n", "")
+	for _, i := range PokeDex[name].Stats {
+		fmt.Printf("%30s  - %v: %-10v\n", "", i.Stat.Name, i.BaseStat)
+	}
+
+	// Types
+	fmt.Printf("%30sType:\n", "")
+	for _, i := range PokeDex[name].Types {
+		fmt.Printf("%30s  - %-10v\n", "", i.Type.Name)
+	}
+
+	fmt.Println(strings.Repeat("-", consoleWidth))
+	return nil
+}
+
+func commandPokedex(args []string) error {
+	fmt.Printf("Your Pokedex: \n")
+	for pokemon := range PokeDex {
+		fmt.Printf("  - %v\n", PokeDex[pokemon].Name)
+	}
 	return nil
 }
 
