@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
+	_ "math/rand"
 	"os"
 	"strings"
 	"time"
@@ -45,6 +47,11 @@ func createCliCommand() map[string]cliCommand {
 			name:        "explore <area_name>",
 			description: "Displays pokemons in the area",
 			callback:    config.commmandExplore,
+		},
+		"catch": {
+			name:        "catch <pokemon>",
+			description: "Trys to catch a pokemon",
+			callback:    config.commandCatch,
 		},
 	}
 }
@@ -120,16 +127,58 @@ func (c *config) commmandExplore(args []string) error {
 	}
 	name = args[0]
 
-	pokemon, err := internal.GetPokemons(url, name, c.cache)
+	pokemon, err := internal.GetPokemonsInArea(url, name, c.cache)
 	if err != nil {
 		return fmt.Errorf("Invalid area name %v", err)
 	}
 
+	fmt.Printf("Exploring %v...\n", name)
 	fmt.Printf("Found Pokemon:\n")
 	for _, i := range pokemon.PokemonEncounters {
 		fmt.Printf("- %v\n", i.Pokemon.Name)
 	}
 
+	return nil
+}
+
+var PokeDex = make(map[string]internal.PokemonDetails)
+
+func (c *config) commandCatch(args []string) error {
+	url := "https://pokeapi.co/api/v2/pokemon/"
+	var name string
+
+	if len(args) == 0 {
+		return fmt.Errorf("Insert pokemon name [catch <pokemon>]")
+	}
+	name = args[0]
+
+	pokemon, err := internal.GetPokemon(url, name, c.cache)
+	if err != nil {
+		fmt.Printf("Invalid pokemon name %v\n", err)
+		return err
+	}
+	fmt.Printf("Throwing a pokeball at %+v...\n", pokemon.Name)
+
+	catchThreshold := 100 - pokemon.BaseExperience/10 // Smaller value -> harder catch
+
+	seed := time.Now().UnixNano()
+	rng := rand.New(rand.NewSource(seed))
+
+	min, max := 0, 100
+	randomInRange := rng.Intn(max-min+1) + min
+
+	if randomInRange <= catchThreshold {
+		fmt.Printf("Oh no! %v got away!\n", pokemon.Name)
+		fmt.Printf("Better luck next time!\n")
+		return nil
+	}
+
+	fmt.Printf("Congratulations! You caught %v!\n", pokemon.Name)
+	fmt.Printf("Pokedex: [%v]\n", pokemon.Name)
+
+	PokeDex[pokemon.Name] = pokemon
+
+	// fmt.Printf("Pokedex: %v\n", PokeDex)
 	return nil
 }
 

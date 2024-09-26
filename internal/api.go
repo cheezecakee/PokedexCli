@@ -37,15 +37,26 @@ func fetchApi(url string, target interface{}, cache *Cache) error {
 	return nil
 }
 
-func GetPokemons(url, name string, cache *Cache) (Pokemons, error) {
-	var pokemons Pokemons
+func GetPokemonsInArea(url, name string, cache *Cache) (LocationAreaResponse, error) {
+	var locationArea LocationAreaResponse
 	url = url + name
-	err := fetchApi(url, &pokemons, cache)
+	err := fetchApi(url, &locationArea, cache)
 	if err != nil {
-		return Pokemons{}, err
+		return LocationAreaResponse{}, err
 	}
 
-	return pokemons, nil
+	return locationArea, nil
+}
+
+func GetPokemon(url, name string, cache *Cache) (PokemonDetails, error) {
+	var pokemonDetails PokemonDetails
+	url = url + name
+	err := fetchApi(url, &pokemonDetails, cache)
+	if err != nil {
+		return PokemonDetails{}, err
+	}
+
+	return pokemonDetails, nil
 }
 
 func GetLocations(url string, cache *Cache) (Locations, error) {
